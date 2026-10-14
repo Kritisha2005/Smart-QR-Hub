@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QR Project</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>QR Code Generator</h1>
+
+        <p class="subtitle">
+            Create and manage your QR codes easily
+        </p>
+
+        <div class="generator-card">
+
+            <input type="text" id="qrText" placeholder="Enter text or URL">
+
+            <button onclick="generateQR()">
+                Generate QR
+            </button>
+
+            <div id="qrCode"></div>
+            <button onclick="downloadQR()">DownloadQR</button>
+
+        </div>
+
+        <h2>QR History</h2>
+
+        <div id="history"></div>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
