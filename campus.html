@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart College Portal</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            color: white;
+            text-align: center;
+            padding: 38px 18px;
+        }
+
+        header h1 {
+            margin: 0 0 10px;
+            font-size: 32px;
+        }
+
+        header p {
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 28px auto;
+            padding: 0 18px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            margin-bottom: 22px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #1e3a8a;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 7px 0;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 11px 15px;
+            margin: 5px 5px 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+        }
+
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+
+        .notice {
+            border-left: 5px solid #2563eb;
+            background: #f8fafc;
+            padding: 18px;
+            margin: 14px 0;
+            border-radius: 10px;
+        }
+
+        .notice h3 {
+            margin: 0 0 10px;
+        }
+
+        .notice p {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .priority {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .URGENT {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .IMPORTANT {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .INFO {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .date {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .info-item {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-item h3 {
+            margin-top: 0;
+        }
+
+        #portalQR {
+            display: flex;
+            justify-content: center;
+            margin: 20px auto;
+        }
+
+        #aiAnswer {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 12px;
+            white-space: pre-wrap;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: #64748b;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 26px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🏫 Smart College Portal</h1>
+        <p>One QR • Complete College Information</p>
+        <p>Notices, Campus Services and Student Support</p>
+    </header>
+
+    <main class="container">
+
+        <!-- QR CODE -->
+        <section class="card">
+            <h2>📱 College Portal QR</h2>
+            <p>Generate a QR code for this portal's current web address.</p>
+
+            <button onclick="generatePortalQR()">Generate Portal QR</button>
+
+            <div id="portalQR"></div>
+
+            <p id="qrMessage" class="date">
+                Open this page through a hosted URL before sharing the QR.
+            </p>
+        </section>
+
+        <!-- IMPORTANT NOTICES -->
+        <section class="card">
+            <h2>📢 Important Notices</h2>
+
+            <input type="search" id="noticeSearch" placeholder="Search notices..." oninput="displayNotices()">
+
+            <div id="noticeList" aria-live="polite"></div>
+        </section>
+
+        <!-- NOTICE MANAGEMENT -->
+        <section class="card">
+            <h2>🛠️ Notice Management</h2>
+            <p>Add a notice or update an existing notice.</p>
+
+            <form id="noticeForm">
+                <input type="text" id="noticeTitle" placeholder="Notice title" maxlength="120" required>
+
+                <textarea id="noticeDetails" placeholder="Enter notice details" maxlength="2000" required></textarea>
+
+                <select id="noticePriority">
+                    <option value="URGENT">🔴 Urgent</option>
+                    <option value="IMPORTANT">🟠 Important</option>
+                    <option value="INFO">🔵 Info</option>
+                </select>
+
+                <button type="submit" id="saveNoticeBtn">
+                    ➕ Add Notice
+                </button>
+
+                <button type="button" id="cancelEditBtn" hidden onclick="cancelEdit()">
+                    Cancel Edit
+                </button>
+            </form>
+
+            <p class="date">
+                Demo notice management: changes are stored in this browser only.
+            </p>
+        </section>
+
+        <!-- EVENTS -->
+        <section class="card">
+            <h2>📅 Events & Announcements</h2>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <h3>🎓 College Events</h3>
+                    <p>College events and upcoming activities will be announced here.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>📝 Academic Updates</h3>
+                    <p>Check official college announcements for academic schedules.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CAMPUS INFORMATION -->
+        <section class="card">
+            <h2>🏢 College Information</h2>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+                    <h3>📚 Library</h3>
+                    <p><strong>Location:</strong> Update with your actual college location.</p>
+                    <p><strong>Timings:</strong> Add official library timings.</p>
+                    <p>Books, study spaces and learning resources.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>💻 Computer Lab</h3>
+                    <p><strong>Location:</strong> Add the actual lab location.</p>
+                    <p><strong>Timings:</strong> Confirm with the college.</p>
+                    <p>Computers and facilities for academic work.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>🏛️ Departments</h3>
+                    <p>Add department names, office locations and official contacts.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>🍽️ Canteen</h3>
+                    <p>Add the canteen location, opening hours and available facilities.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>🕒 College Timings</h3>
+                    <p>Check your college's official timetable and working hours.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>📞 Contact Information</h3>
+                    <p>Add verified college office phone numbers and email addresses.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>📋 Rules & Guidelines</h3>
+                    <p>Follow the official student handbook and college rules.</p>
+                </div>
+
+                <div class="info-item">
+                    <h3>🧭 Campus Help</h3>
+                    <p>Ask the administration for verified campus directions and assistance.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- CAMPUS ASSISTANT -->
+        <section class="card">
+            <h2>🤖 Campus Assistant</h2>
+
+            <p>
+                Ask a question about notices, the library, labs, events or campus services.
+            </p>
+
+            <input type="text" id="aiQuestion" placeholder="Example: Where is the library?">
+
+            <button onclick="askCampusAssistant()">Ask Assistant</button>
+
+            <div id="aiAnswer" aria-live="polite">
+                Your answer will appear here.
+            </div>
+
+            <p class="date">
+                This is a rule-based assistant prototype, not a connected AI model.
+                Verify official information with the college administration.
+            </p>
+        </section>
+
+    </main>
+
+    <footer>
+        Smart College Portal • Student Project Prototype
+    </footer>
+
+    <script>
+        const defaultNotices = [
+            {
+                id: "demo-1",
+                title: "Semester Examination Notice",
+                details: "Please check the official examination schedule issued by your college.",
+                priority: "URGENT",
+                date: "Demo notice"
+            },
+            {
+                id: "demo-2",
+                title: "College Annual Function",
+                details: "Please check the official college announcement for event details.",
+                priority: "IMPORTANT",
+                date: "Demo notice"
+            },
+            {
+                id: "demo-3",
+                title: "Library Information",
+                details: "Please confirm library opening hours with the college library.",
+                priority: "INFO",
+                date: "Demo notice"
+            }
+        ];
+
+        function loadNotices() {
+            try {
+                const saved = localStorage.getItem("campusNotices");
+
+                if (saved === null) {
+                    return defaultNotices.map(notice => ({ ...notice }));
+                }
+
+                const parsed = JSON.parse(saved);
+
+                if (!Array.isArray(parsed)) {
+                    return defaultNotices.map(notice => ({ ...notice }));
+                }
+
+                return parsed;
+            } catch (error) {
+                return defaultNotices.map(notice => ({ ...notice }));
+            }
+        }
+
+        let notices = loadNotices();
+        let editingNoticeId = null;
+
+        function saveNotices() {
+            try {
+                localStorage.setItem(
+                    "campusNotices",
+                    JSON.stringify(notices)
+                );
+                return true;
+            } catch (error) {
+                alert("Could not save notices in this browser.");
+                return false;
+            }
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? "").replace(/[&<>"']/g, function (char) {
+                const entities = {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                };
+
+                return entities[char];
+            });
+        }
+
+        function displayNotices() {
+            const list = document.getElementById("noticeList");
+            const search = document
+                .getElementById("noticeSearch")
+                .value
+                .trim()
+                .toLowerCase();
+
+            list.innerHTML = "";
+
+            const filtered = notices
+                .filter(notice => {
+                    const text = `${notice.title} ${notice.details} ${notice.priority}`;
+                    return text.toLowerCase().includes(search);
+                })
+                .sort((a, b) => {
+                    const priorityOrder = {
+                        URGENT: 0,
+                        IMPORTANT: 1,
+                        INFO: 2
+                    };
+
+                    return (priorityOrder[a.priority] ?? 3) -
+                        (priorityOrder[b.priority] ?? 3);
+                });
+
+            if (filtered.length === 0) {
+                list.textContent = "No notices found.";
+                return;
+            }
+
+            filtered.forEach(notice => {
+                const card = document.createElement("article");
+                card.className = "notice";
+
+                const title = escapeHTML(notice.title);
+                const details = escapeHTML(notice.details);
+                const priority = ["URGENT", "IMPORTANT", "INFO"].includes(notice.priority)
+                    ? notice.priority
+                    : "INFO";
+
+                const date = escapeHTML(notice.date || "Date unavailable");
+
+                card.innerHTML = `
+                <span class="priority ${priority}">${priority}</span>
+                <h3>${title}</h3>
+                <p>${details}</p>
+                <div class="date">📅 ${date}</div>
+            `;
+
+                const editButton = document.createElement("button");
+                editButton.type = "button";
+                editButton.textContent = "✏️ Edit";
+                editButton.addEventListener("click", () => editNotice(notice.id));
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className = "delete-btn";
+                deleteButton.textContent = "🗑️ Delete";
+                deleteButton.addEventListener("click", () => deleteNotice(notice.id));
+
+                card.append(editButton, deleteButton);
+                list.appendChild(card);
+            });
+        }
+
+        document.getElementById("noticeForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const title = document.getElementById("noticeTitle").value.trim();
+            const details = document.getElementById("noticeDetails").value.trim();
+            const priority = document.getElementById("noticePriority").value;
+
+            if (!title || !details) {
+                alert("Please enter both the notice title and details.");
+                return;
+            }
+
+            if (editingNoticeId !== null) {
+                const notice = notices.find(item => item.id === editingNoticeId);
+
+                if (!notice) {
+                    alert("Notice not found. Please try again.");
+                    cancelEdit();
+                    return;
+                }
+
+                notice.title = title;
+                notice.details = details;
+                notice.priority = priority;
+                notice.date = new Date().toLocaleString();
+            } else {
+                notices.unshift({
+                    id: (crypto.randomUUID
+                        ? crypto.randomUUID()
+                        : String(Date.now()) + Math.random().toString(16).slice(2)),
+                    title: title,
+                    details: details,
+                    priority: priority,
+                    date: new Date().toLocaleString()
+                });
+            }
+
+            if (!saveNotices()) {
+                return;
+            }
+
+            cancelEdit();
+            displayNotices();
+        });
+
+        function editNotice(id) {
+            const notice = notices.find(item => item.id === id);
+
+            if (!notice) {
+                alert("Notice not found.");
+                return;
+            }
+
+            editingNoticeId = id;
+
+            document.getElementById("noticeTitle").value = notice.title;
+            document.getElementById("noticeDetails").value = notice.details;
+            document.getElementById("noticePriority").value = notice.priority;
+
+            document.getElementById("saveNoticeBtn").textContent = "💾 Save Changes";
+            document.getElementById("cancelEditBtn").hidden = false;
+
+            document.getElementById("noticeForm").scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        function cancelEdit() {
+            editingNoticeId = null;
+
+            document.getElementById("noticeForm").reset();
+            document.getElementById("saveNoticeBtn").textContent = "➕ Add Notice";
+            document.getElementById("cancelEditBtn").hidden = true;
+        }
+
+        function deleteNotice(id) {
+            const notice = notices.find(item => item.id === id);
+
+            if (!notice) {
+                return;
+            }
+
+            if (!confirm(`Delete "${notice.title}"?`)) {
+                return;
+            }
+
+            notices = notices.filter(item => item.id !== id);
+
+            if (!saveNotices()) {
+                return;
+            }
+
+            if (editingNoticeId === id) {
+                cancelEdit();
+            }
+
+            displayNotices();
+        }
+
+        function askCampusAssistant() {
+            const question = document
+                .getElementById("aiQuestion")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const answer = document.getElementById("aiAnswer");
+
+            if (!question) {
+                answer.textContent = "Please enter a question first.";
+                return;
+            }
+
+            let response =
+                "I don't have verified information for that question yet. Please contact your college administration.";
+
+            if (question.includes("notice") || question.includes("announcement")) {
+                const urgent = notices.filter(item => item.priority === "URGENT");
+
+                response = urgent.length
+                    ? "Urgent notices: " + urgent.map(item => item.title).join(", ")
+                    : "There are currently no notices marked Urgent.";
+            } else if (
+                question.includes("library") ||
+                question.includes("book")
+            ) {
+                response = "For library location and opening hours, please check the College Information section and confirm the details with your college.";
+            } else if (
+                question.includes("lab") ||
+                question.includes("computer")
+            ) {
+                response = "Please check the Computer Lab section for information. Confirm the actual room and timings with your college.";
+            } else if (
+                question.includes("canteen") ||
+                question.includes("food")
+            ) {
+                response = "Please check the Canteen section and confirm opening hours with your college.";
+            } else if (
+                question.includes("event") ||
+                question.includes("function")
+            ) {
+                response = "Please check Events & Announcements and the Important Notices section for verified event information.";
+            } else if (
+                question.includes("timing") ||
+                question.includes("time") ||
+                question.includes("hours")
+            ) {
+                response = "College timings depend on your institution. Please check the official timetable or contact the college office.";
+            } else if (
+                question.includes("contact") ||
+                question.includes("phone") ||
+                question.includes("email")
+            ) {
+                response = "Please use the official contact details published by your college.";
+            } else if (
+                question.includes("department") ||
+                question.includes("office")
+            ) {
+                response = "Please check the Departments section or ask the college administration for the correct office location.";
+            }
+
+            answer.textContent = response;
+        }
+
+        function generatePortalQR() {
+            const qrDiv = document.getElementById("portalQR");
+            const message = document.getElementById("qrMessage");
+
+            qrDiv.innerHTML = "";
+
+            const url = window.location.href;
+
+            if (
+                window.location.protocol === "file:" ||
+                url.includes("127.0.0.1") ||
+                url.includes("localhost")
+            ) {
+                message.textContent =
+                    "This is a local development address. Host the portal online before sharing this QR with other students.";
+            } else {
+                message.textContent =
+                    "QR generated for the current portal URL. Scan it to test the link.";
+            }
+
+            new QRCode(qrDiv, {
+                text: url,
+                width: 220,
+                height: 220
+            });
+        }
+
+        displayNotices();
+    </script>
+
+</body>
+
+</html>
